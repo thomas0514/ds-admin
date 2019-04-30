@@ -134,7 +134,7 @@ export default {
   // 快报导出数据
   exportExcelKbao: (data) => {
     return request({
-      url: dev + '/admin/agent/excel' + formatQueryData(data),
+      url: dev + '/order/kbao/excel' + formatQueryData(data),
       method: 'get'
     })
   },
@@ -151,5 +151,11 @@ export default {
       url: dev + '/comm/policyareas' + formatQueryData(data),
       method: 'get'
     })
-  }
+  },
+  getServiceExpertList:(data) => {
+    return request({
+      url: dev + '/order/service/expert/list' + formatQueryData(data),
+      method: 'get'
+    })
+  },
 }

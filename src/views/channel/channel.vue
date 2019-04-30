@@ -18,6 +18,8 @@
       :pageSize.sync="tableParam.pageSize"
       @modifyInfo="modifyInfo"
       @changeWechat="changeWechat"
+      @copyChannelUrl="copyChannelUrl"
+      @loadewm="loadewm"
       @getList="initData"
     ></base-table>
     <el-dialog :visible.sync="detailsVisible" :title="title" width="30%">
@@ -70,7 +72,10 @@
             <el-input v-model="data.currentWxNickName" :readonly="true"></el-input>
           </el-form-item>
           <el-form-item label="二维码">
-            <img style="width:120px;height:120px" :src="data.currentWxQRCodePath">
+            <img
+              style="width:120px;height:120px"
+              :src="data.currentWxQRCodePath?data.currentWxQRCodePath:'/static/noimg.png'"
+            >
           </el-form-item>
           <label>更换后</label>
           <el-form-item label="昵称" style="margin-top:15px">
@@ -131,6 +136,20 @@ export default {
       ],
       queryFormList: [
         {
+          type: "input",
+          name: "channelName",
+          label: "渠道名称",
+          placeholder: "请输入渠道名称",
+          value: ""
+        },
+        {
+          type: "input",
+          name: "currentWxNickName",
+          label: "微信昵称",
+          placeholder: "请输入微信昵称",
+          value: ""
+        },
+        {
           type: "select",
           name: "channelStatus",
           label: "渠道状态",
@@ -171,16 +190,11 @@ export default {
       ],
       headers: [
         {
-          key: "channelUrl",
-          title: "渠道链接",
-          extra: true
-        },
-        {
           key: "channelQRcode",
-          width: "120",
-          slot: "img",
+          width: "90",
+          slot: "img2",
           hidden: true,
-          title: "渠道链接二维码"
+          title: "渠道链接"
         },
         {
           key: "personInCharge",
@@ -188,7 +202,8 @@ export default {
         },
         {
           key: "putInTime",
-          title: "投放时间"
+          title: "投放时间",
+          width: "90"
         },
         {
           key: "channelType",
@@ -207,8 +222,13 @@ export default {
           title: "渠道名称"
         },
         {
+          key: "currentWxNickName",
+          title: "微信昵称"
+        },
+        {
           key: "readingVolume",
-          title: "文章阅读量"
+          title: "文章阅读量",
+          width: "100"
         },
         {
           key: "channelStatus",
@@ -288,6 +308,10 @@ export default {
     },
     //改修信息
     modifyInfo(row) {
+      if (!this.PermissionAuth("channel", "put")) {
+        this.$message.error("该操作没有权限");
+        return;
+      }
       this.data = Object.assign({}, row);
       this.detailsVisible = true;
       this.type = "infoModify";
@@ -295,11 +319,11 @@ export default {
     },
     //改修信息
     changeWechat(row) {
-      console.log(this.fileList);
-
+      if (!this.PermissionAuth("channel", "put")) {
+        this.$message.error("该操作没有权限");
+        return;
+      }
       this.fileList.length = 0;
-
-      console.log(this.fileList, 222);
       this.detailsVisible = true;
       this.type = "changeWechat";
       this.title = "更换微信";
@@ -314,6 +338,10 @@ export default {
       this.exportExcelCb(`${devService}/customer/temp/excel`);
     },
     uploadBtn() {
+      if (!this.PermissionAuth("channel", "post")) {
+        this.$message.error("该操作没有权限");
+        return;
+      }
       this.detailsVisible = true;
       this.type = "addChannel";
       this.title = "添加渠道";
@@ -327,11 +355,9 @@ export default {
       switch (this.type) {
         case "addChannel":
           result = await api.channelAdd({ strData: this.channelName });
-          console.log(result);
           break;
         case "infoModify":
           let that = this;
-
           let data = {
             channelName: that.data.channelName,
             putInTime: that.data.putInTime,
@@ -343,10 +369,8 @@ export default {
             channelId: that.data.channelId
           };
           result = await api.channelUpdate(data);
-          console.log(result);
           break;
         case "changeWechat":
-          console.log("changeWechat");
           if (!this.wechatnickName) {
             this.$message.error("输入昵称后，请重试");
             return false;
@@ -363,79 +387,111 @@ export default {
             },
             this.upData
           );
-
-          console.log(tmp);
           result = await api.changeWechat(tmp);
-
-        // return;
-
         default:
           break;
       }
       if (result.status) {
-        console.log("oK");
         this.initData();
         this.detailsVisible = false;
         if (this.type == "changeWechat") {
-          console.log("oK", "changeWechat");
           this.wechatnickName = "";
           this.deleteFile();
-          // this.upData = {
-          //   currentWxQRCodeName: "",
-          //   currentWxQRCodePath: ""
-          // };
-          // this.fileList.length = 0;
         }
       } else {
         this.$message.error(res.msg);
       }
     },
     handleUploadSucess(res, file, fileList) {
-      console.log(res, 22222222);
-      console.log(file, 22222222);
-      console.log(fileList, 22222222);
       this.fileList = fileList;
 
       if (res.status == 1) {
-        // this.upData.currentWxQRCodePath = res.data.currentWxQRCodePath;
-        // this.upData.currentWxQRCodeName = res.data.currentWxQRCodeName;
         this.upData = res.data;
       } else {
         this.$message.error(res.msg);
       }
     },
     handleUploadError(res) {
-      console.log(res);
+      //console.log(res);
     },
     deleteFile(file, fileList) {
-      console.log("delete");
       this.upData = {
         currentWxQRCodeName: "",
         currentWxQRCodePath: ""
       };
       this.fileList.pop();
-
-      // this.fileList = fileList;
     },
     handleBeforeUpload() {},
     async getChannelStatus() {
-      // let tempArr = [];
+      let queryFormList = this.queryFormList;
       let res = await api.getChannelStatus();
-      // res.data.map((item, index) => {
-      //   tempArr.push({
-      //     label: item.des,
-      //     value: item.status
-      //   });
-      // });
-      // this.queryFormList[0].options = tempArr;
       res.data.map((item, index) => {
         this.channelStatusList.push({
           label: item.des,
           value: item.status
         });
       });
-      this.queryFormList[0].options = this.channelStatusList;
-      console.log(this.channelStatusList);
+      for (let i = 0; i < queryFormList.length; i++) {
+        if (queryFormList[i].name == "channelStatus") {
+          queryFormList[i].options = this.channelStatusList;
+        }
+      }
+    },
+    copyChannelUrl(row) {
+      var txt = row.channelUrl;
+      this.copyToClipboard(txt);
+    },
+    loadewm(row) {
+      var url = row.channelQRcode;
+      var fileName = row.channelName + ".png";
+      this.downloadFile(fileName, url);
+    },
+    downloadFile(fileName, content) {
+      let aLink = document.createElement("a");
+      let blob = this.base64ToBlob(content); //new Blob([content]);
+
+      let evt = document.createEvent("HTMLEvents");
+      evt.initEvent("click", true, true); //initEvent 不加后两个参数在FF下会报错  事件类型，是否冒泡，是否阻止浏览器的默认行为
+      aLink.download = fileName;
+      aLink.href = URL.createObjectURL(blob);
+      aLink.click();
+    },
+    base64ToBlob(code) {
+      let parts = code.split(";base64,");
+      let contentType = parts[0].split(":")[1];
+      let raw = window.atob(parts[1]);
+      let rawLength = raw.length;
+
+      let uInt8Array = new Uint8Array(rawLength);
+
+      for (let i = 0; i < rawLength; ++i) {
+        uInt8Array[i] = raw.charCodeAt(i);
+      }
+      return new Blob([uInt8Array], { type: contentType });
+    },
+    copyToClipboard(s) {
+      if (window.clipboardData) {
+        window.clipboardData.setData("text", s);
+        this.$message({
+          showClose: true,
+          message: "复制成功！",
+          type: "success"
+        });
+      } else {
+        (function(s) {
+          document.oncopy = function(e) {
+            e.clipboardData.setData("text", s);
+            e.preventDefault();
+            document.oncopy = null;
+          };
+        })(s);
+        document.execCommand("Copy");
+        this.$message({
+          showClose: true,
+          message: "复制成功！",
+          type: "success"
+        });
+      }
     }
   }
 };

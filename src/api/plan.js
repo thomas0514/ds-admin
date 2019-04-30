@@ -14,7 +14,7 @@ export default {
   //可销售区域列表
   getAreaList: (data) => {
     return request({
-      url: dev + '/area/areaList',
+      url: dev + '/comm/areaList',
       method: 'get',
       data
     })

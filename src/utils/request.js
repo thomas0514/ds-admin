@@ -21,7 +21,7 @@ service.interceptors.request.use(
     if (store.getters.token) {
       config.headers['authorization'] = getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
     }
-     config.headers['userId'] = '410dbf7986084d1c95442be9500cf1e8'
+    config.headers['userId'] = '699c9550b77f4ae18238399ce02596a0'
 
     return config
   },

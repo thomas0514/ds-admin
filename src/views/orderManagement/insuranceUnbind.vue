@@ -39,13 +39,6 @@ export default {
   },
   data() {
     return {
-      toolButtons: [
-        {
-          name: "同步",
-          operation: "selectAll",
-          icon: "el-icon-rank"
-        }
-      ],
       queryFormList: [
         {
           type: "input",
@@ -167,7 +160,7 @@ export default {
           title: "被保人身份证号"
         },
         {
-          key: "staPremium",
+          key: "recPremium",
           title: "保费"
         },
         {
@@ -212,6 +205,10 @@ export default {
       }
     },
      synchronize(row) {
+      if(!this.PermissionAuth("unbind", "put")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
       let that = this;
       let policyId = row.policyId
       let title = "确定解绑“" + row.insurer + "”的保险订单吗？";
@@ -230,7 +227,7 @@ export default {
         .catch(() => {
           that.$message({
             type: "info",
-            message: "已取消"
+            message: "已取消解绑"
           });
         });
     },
@@ -242,20 +239,6 @@ export default {
       } else {
         this.$message.error(res.msg);
       }
-    },
-    selectAll() {
-      let policyId = this.policyIds.join(",");
-      if (policyId == "" || policyId == null) {
-        this.$message.error("您还未选择需要解绑的保单");
-        return false;
-      }
-      this.$router.push({
-        path: "/orderManagement/wxcustomer",
-        query: {
-          policyId: policyId,
-          bindStatus: 0
-        }
-      });
     },
     changeSelect(val) {
       this.policyIds = [];

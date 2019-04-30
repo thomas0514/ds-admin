@@ -199,8 +199,9 @@ export default {
         {
           type: "datetimerange",
           name: "startTime",
-          label: "请选择日期",
-          placeholder: "请选择日期",
+          label: "订单时间",
+          placeholder: "请选择订单时间",
+          format: "yyyy-MM-dd HH:mm",
           value: "",
           clearable: true,
           options: []
@@ -209,11 +210,13 @@ export default {
       headers: [
         {
           key: "serviceOrderId",
-          title: "订单ID"
+          title: "订单ID",
+          width: "150px"
         },
         {
           key: "orderDate",
-          title: "订单时间"
+          title: "订单时间",
+          width: "150px"
         },
         {
           key: "wxName",

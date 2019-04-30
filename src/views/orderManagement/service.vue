@@ -378,7 +378,10 @@ export default {
       isDelay: false,
       expertList: [],
       isCounselor: false,
-      counselor: {},
+      counselor: {
+        expertId:"",
+        expertName:""
+      },
       isRecords: false,
       recordList: [],
       goodsList: [],
@@ -390,7 +393,6 @@ export default {
   created() {
     this.initData();
     this.getHeadExperList();
-    this.getExpertList();
     this.getAdviserList();
   },
   methods: {
@@ -447,7 +449,6 @@ export default {
         }
       }
       this.goodsList = row.serviceOrderSubList;
-      console.log(this.goodsList);
       this.isGoods = true;
     },
     async getHeadExperList() {
@@ -515,6 +516,10 @@ export default {
       }
     },
     isDelays(row) {
+      if(!this.PermissionAuth("service", "put")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
       this.isDelay = true;
       this.delay.serviceOrderId = row.serviceOrderId;
     },
@@ -534,8 +539,13 @@ export default {
       }
     },
     isCounselors(row) {
-      this.isCounselor = true;
+      if(!this.PermissionAuth("service", "put")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
       this.counselor.serviceOrderId = row.serviceOrderId;
+      this.counselor.expertId = "";
+      this.getServiceExpertList({serviceOrderId:row.serviceOrderId})
     },
     async changeCounselor() {
       let that = this;
@@ -553,11 +563,17 @@ export default {
         that.$message.error(res.msg);
       }
     },
-    async getExpertList() {
+    async getServiceExpertList(data) {
       let that = this;
-      let res = await api.getExpertList();
+      let res = await api.getServiceExpertList(data);
       if (res.status == 1) {
-        that.expertList = res.data;
+        if(res.data.length>0){
+          that.expertList = res.data;
+          that.isCounselor = true;
+        }else{
+          that.$message.error("无专家可选");
+        }
+        
       } else {
         that.$message.error(res.msg);
       }
@@ -565,6 +581,7 @@ export default {
     counselorChange(val) {
       for (var i in this.expertList) {
         if (this.expertList[i].expertId == val) {
+          this.counselor.expertId = this.expertList[i].expertId;
           this.counselor.expertName = this.expertList[i].expertName;
         }
       }
@@ -589,6 +606,10 @@ export default {
       this.recordList = row.expertTransferRecords;
     },
     isOrderRefundClick(row) {
+      if(!this.PermissionAuth("service", "put")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
       this.orderRefundList.refundExplanation="";
       this.isOrderRefund = true;
       this.orderRefundList.serviceProductId = row.serviceProductId;

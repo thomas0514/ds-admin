@@ -18,7 +18,7 @@
       :pageSize.sync="tableParam.pageSize"
       @getList="initData"
     ></base-table>
-    <el-dialog :visible.sync="detailsVisible" title="文件上传" width="40%">
+    <el-dialog :visible.sync="detailsVisible" title="文件上传" width="40%" @close="resetDialogData">
       <el-form>
         <div v-if="type=='upload'">
           <el-form-item label="请上传附件">
@@ -34,6 +34,7 @@
               :limit="1"
               :auto-upload="false"
               :on-error="handleUploadError"
+              :headers="uploadHeaders"
             >
               <el-button size="small" type="primary">点击上传</el-button>
             </el-upload>
@@ -62,6 +63,7 @@ import baseTable from "@/components/baseTable";
 import queryConditions from "@/components/queryConditions";
 import baseDetails from "@/components/baseDetails";
 import toolbar from "@/components/toolbar";
+import { getToken } from "@/utils/auth";
 
 export default {
   name: "Kbao",
@@ -269,7 +271,9 @@ export default {
         upUrl: `${devService}/order/core/upload`,
         fileList: []
       },
-      type: "upload" //upload loaded 分别表示上传前和上传之后
+      type: "upload", //upload loaded 分别表示上传前和上传之后
+      uploadHeaders: { authorization: getToken() }, //上传文件的头文件
+      outLoadURL: ""
     };
   },
   created() {
@@ -296,6 +300,9 @@ export default {
     async getAgentList() {
       let tempArr = [];
       let res = await api.getAgentList();
+      if (res.data == null || res.data.length == 0) {
+        return;
+      }
       res.data.map((item, index) => {
         tempArr.push({
           label: item.agentName,
@@ -307,6 +314,9 @@ export default {
     async getAdviserList() {
       let tempArr = [];
       let res = await api.getAdviserList();
+      if (res.data == null || res.data.length == 0) {
+        return;
+      }
       res.data.map((item, index) => {
         tempArr.push({
           label: item.adviserName,
@@ -318,6 +328,9 @@ export default {
     async getExpertList() {
       let tempArr = [];
       let res = await api.getExpertList();
+      if (res.data == null || res.data.length == 0) {
+        return;
+      }
       res.data.map((item, index) => {
         tempArr.push({
           label: item.expertName,
@@ -329,6 +342,9 @@ export default {
     async getAideList() {
       let tempArr = [];
       let res = await api.getAideList();
+      if (res.data == null || res.data.length == 0) {
+        return;
+      }
       res.data.map((item, index) => {
         tempArr.push({
           label: item.aideName,
@@ -354,12 +370,18 @@ export default {
       }
     },
     uploadBtn() {
-      console.log("upload");
-
+      if (!this.PermissionAuth("core", "post")) {
+        this.$message.error("该操作没有权限");
+        return;
+      }
       this.detailsVisible = true;
       this.type == "upload";
     },
     submit() {
+      if (this.type == "loaded") {
+        this.detailsVisible = false;
+        return;
+      }
       this.detailsVisible = true;
       if (this.upLoadData.fileList.length == 0) {
         this.$message.error("请选择上传的文件");
@@ -367,25 +389,12 @@ export default {
       this.$refs.upload.submit();
     },
     addFile(file, fileList) {
-      // console.log(file);
-      // console.log(fileList);
-
-      // 对上传的文件格式进行预过滤，待启用
-      // let fileName = file.name;
-      // let fileSize = file.size / 1024;
-      // let type = fileName.split(".").splice(-1)[0];
-
-      // const MAX_SIZE = 100000;
-      // const FILE_TYPE_LIST = ["xlsx", "json"];
-
-      // if (fileList > MAX_SIZE) {
-      //   this.$message.error("上传文件超过XX限制，请重新确认");
-      //   fileList.pop();
-      // }
-      // if (!type in FILE_TYPE_LIST) {
-      //   this.$message.error("上传文件类型不对，请重新确认");
-      //   fileList.pop();
-      // }
+      let type = file.name.split(".").splice(-1)[0];
+      const FILE_TYPE_LIST = ["xlsx"];
+      if (!FILE_TYPE_LIST.includes(type)) {
+        this.$message.error("上传文件类型只允许为xlsx，请重新确认");
+        fileList.pop();
+      }
 
       this.upLoadData.fileList = fileList;
     },
@@ -394,22 +403,27 @@ export default {
     },
     //上传成功
     handleUploadSucess(res) {
-      console.log(res.status, 333);
       if (res.status == 1) {
+        this.outLoadURL = res.data.strData;
         this.type = "loaded";
-        this.upLoadData.fileList.pop();
-        console.log(this.type);
+      } else {
+        this.$message.error(res.msg);
       }
     },
     //上传失败
     handleUploadError(res) {},
-    handleBeforeUpload(res) {}, //导出上传失败数据
-    exportData() {
-      // console.log(this.uploadResult.key);
-      // let data = {
-      //   key: escape(this.uploadResult.key)
-      // };
-      window.location.href = `${devService}/order/core/upload`;
+    handleBeforeUpload(res) {},
+    async exportData() {
+      //导出上传明细数据
+      window.location.href = this.outLoadURL;
+      this.resetDialogData();
+    },
+    //关闭对话框时把对话框内容恢复成初始值
+    resetDialogData() {
+      // debugger;
+      this.detailsVisible = false;
+      this.type = "upload";
+      this.upLoadData.fileList.pop();
     }
   }
 };

@@ -22,7 +22,7 @@
       @ableOrg="ableOrg"
       @getList="initData"
     ></base-table>
-    <el-dialog :title="OrgTitle" :visible.sync="detailsVisible">
+    <el-dialog :title="orgTitle" :visible.sync="detailsVisible">
       <el-form :model="detailsData">
         <el-form-item label="组织名称" :label-width="formLabelWidth">
           <el-input v-model="detailsData.orgName" :disabled="iSdisabled"></el-input>
@@ -146,7 +146,7 @@ export default {
       detailsOptions: [],
       detailsData: {},
       detailsVisible: false,
-      OrgTitle: "新增组织",
+      orgTitle: "新增组织",
       formLabelWidth: "120px",
       iSdisabled: true,
       roleList: [],
@@ -184,7 +184,6 @@ export default {
       let res = await api.getOrgRoleList();
       if (res.status == 1) {
         this.roleList = res.data;
-        console.log(this.roleList);
       } else {
         this.$message.error(res.msg);
       }
@@ -205,12 +204,11 @@ export default {
         note: that.detailsData.note,
         roleId: that.detailsData.roleId
       };
-      console.log(data);
       let res = await api.addOrg(data);
       if (res.status == 1) {
         that.detailsVisible = false;
         that.$message.success("新建成功");
-        this.initData();
+        that.initData();
       } else {
         that.$message.error(res.msg);
       }
@@ -218,7 +216,7 @@ export default {
     async addEditOrg() {
       let that = this;
       let data = {
-        roleName: that.detailsData.roleName,
+        orgName: that.detailsData.orgName,
         note: that.detailsData.note,
         roleId: that.detailsData.roleId,
         orgId: that.detailsData.orgId
@@ -227,30 +225,41 @@ export default {
       if (res.status == 1) {
         that.detailsVisible = false;
         that.$message.success("修改成功");
+        that.initData();
       } else {
         that.$message.error(res.msg);
       }
     },
     viewOrg(row) {
       let data = { id: row.orgId };
+      this.orgTitle = "组织详情"
       this.iSdisabled = true;
       this.detailsVisible = true;
       this.getOrgOne(data);
     },
     editOrg(row) {
-      this.OrgId = row.orgId;
+      if(!this.PermissionAuth("org", "put")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
+      this.orgTitle = "修改组织"
+      this.orgId = row.orgId;
       let data = { id: row.orgId };
       this.iSdisabled = false;
       this.detailsVisible = true;
       this.getOrgOne(data);
     },
     deleteOrg(row) {
+      if(!this.PermissionAuth("org", "delete")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
       let data = {
         id: row.orgId
       };
       let that = this;
       that
-        .$confirm("此操作将永久删除该该角色, 是否继续?", "提示", {
+        .$confirm("此操作将永久删除该组织, 是否继续?", "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
@@ -261,7 +270,7 @@ export default {
             if (res.status == 1) {
               that.$message({
                 type: "success",
-                message: "删除成功!"
+                message: "删除成功"
               });
             } else {
               that.$message.error(res.msg);
@@ -276,11 +285,15 @@ export default {
         });
     },
     ableOrg(row) {
-      let title = "此操作将永久禁用该组织, 是否继续?",
+      if(!this.PermissionAuth("org", "put")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
+      let title = "此操作将禁用该组织, 是否继续?",
         type = 1,
         msg = "禁用";
       if (row.isLock == 1) {
-        title = "此操作将永久启用该组织, 是否继续?";
+        title = "此操作将启用该组织, 是否继续?";
         type = 0;
         msg = "启用";
       }
@@ -301,7 +314,7 @@ export default {
             if (res.status == 1) {
               that.$message({
                 type: "success",
-                message: msg + "成功!"
+                message: msg + "成功"
               });
             } else {
               that.$message.error(res.msg);
@@ -311,13 +324,17 @@ export default {
         .catch(() => {
           that.$message({
             type: "info",
-            message: "已取消删除"
+            message: "已取消"+msg
           });
         });
     },
     //新增组织
     queryBtn() {
-      this.OrgTitle = "新增组织";
+      if(!this.PermissionAuth("org", "post")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
+      this.orgTitle = "新增组织";
       this.detailsData = {};
       this.orgId = "";
       this.iSdisabled = false;

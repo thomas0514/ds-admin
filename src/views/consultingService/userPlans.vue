@@ -109,11 +109,13 @@ export default {
       headers: [
         {
           key: "serviceOrderId",
-          title: "订单ID"
+          title: "订单ID",
+          width: "150px"
         },
         {
           key: "createTime",
-          title: "订单时间"
+          title: "订单时间",
+          width: "150px"
         },
         {
           key: "wxName",
@@ -207,6 +209,14 @@ export default {
       }
     },
     async detailsClick(row) {
+      if (!this.PermissionAuth("plan", "put")) {
+        this.$message({
+          type: "error",
+          message: "该操作没有权限",
+          center: true
+        });
+        return false;
+      }
       this.$router.push({
         path: "userPlanDetails",
         query: {

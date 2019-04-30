@@ -20,7 +20,7 @@
       @getList="initData"
       @toReal="toReal"
     ></base-table>
-    <el-dialog :visible.sync="detailsVisible" title="文件上传" width="40%">
+    <el-dialog :visible.sync="detailsVisible" title="文件上传" width="40%" @close="resetDialogData">
       <el-form>
         <div v-if="type=='upload'">
           <el-form-item label="请上传附件">
@@ -202,7 +202,6 @@ export default {
       ],
       detailsData: {},
       detailsVisible: false,
-      upLoadVis: false,
       type: "tempUser",
       title: "文件上传",
       fileList: [],
@@ -246,8 +245,6 @@ export default {
     },
     toReal(row) {
       let wxId = row.wxId;
-      console.log(row.wxId);
-
       this.$router.push({
         path: "realUser",
         query: {
@@ -266,28 +263,36 @@ export default {
     },
     //上传数据
     uploadBtn() {
+      if (!this.PermissionAuth("temp", "post")) {
+        this.$message.error("该操作没有权限");
+        return;
+      }
+      this.fileList = [];
+      this.channel = "";
+
       this.detailsVisible = true;
     },
     addFile(file, fileList) {
-      // console.log(file);
-      // console.log(fileList);
-
       // 对上传的文件格式进行预过滤，待启用
-      // let fileName = file.name;
-      // let fileSize = file.size / 1024;
-      // let type = fileName.split(".").splice(-1)[0];
+      let fileName = file.name;
+      let fileSize = file.size / 1024;
+      let type = fileName.split(".").splice(-1)[0];
 
-      // const MAX_SIZE = 100000;
+      const MAX_SIZE = 60 * 1024;
       // const FILE_TYPE_LIST = ["xlsx", "json"];
+      const FILE_TYPE_LIST = ["json"];
 
-      // if (fileList > MAX_SIZE) {
-      //   this.$message.error("上传文件超过XX限制，请重新确认");
-      //   fileList.pop();
-      // }
-      // if (!type in FILE_TYPE_LIST) {
-      //   this.$message.error("上传文件类型不对，请重新确认");
-      //   fileList.pop();
-      // }
+      if (fileSize > MAX_SIZE) {
+        this.$message.error("上传文件超过60M限制，请重新确认");
+        fileList.pop();
+        return;
+      }
+      // debugger;
+      if (FILE_TYPE_LIST.indexOf(type) == -1) {
+        this.$message.error("上传文件的类型只能为json，请重新确认");
+        fileList.pop();
+        return;
+      }
 
       this.fileList = fileList;
     },
@@ -305,17 +310,18 @@ export default {
       } else {
         this.$message.error(res.msg);
       }
-      console.log(this.uploadResult, 2222);
     },
     handleError(res) {
       this.$message.error(res.msg);
     },
 
     handleBeforeUpload(file) {
-      // console.log(file, "wwwwwwww");
-      // console.log(file.name, "wwwwwwww");
     },
     async submit() {
+      if (this.type == "loaded") {
+        this.detailsVisible = false;
+        return;
+      }
       if (this.fileList.length == 0) {
         this.$message.error("请选择上传的文件");
         return false;
@@ -342,17 +348,30 @@ export default {
       this.type = "upload";
     },
     //导出上传失败数据
-    exportData() {
-      console.log(this.uploadResult.key);
+    async exportData() {
       let data = {
         key: escape(this.uploadResult.key)
       };
 
+      let res = await api.exportExceltempUser(data);
+      if (res.status == 1) {
+        window.location.href = res.data.strData;
+        this.type = "upload";
+        this.detailsVisible = false;
+        this.fileList.pop();
+        this.channel = "";
+      } else {
+        this.$message.error(res.msg);
+      }
+    },
+    //关闭对话框时把对话框内容恢复成初始值
+    resetDialogData() {
+      // debugger;
+      this.detailsVisible = false;
       this.type = "upload";
-      this.fileList.length = 0;
-
-      // window.location.href =
-      //   `${devService}/customer/temp/getFailDataExcel` + formatQueryData(data);
+      this.detailsVisible = false;
+      this.fileList.pop();
+      this.channel = "";
     }
   }
 };

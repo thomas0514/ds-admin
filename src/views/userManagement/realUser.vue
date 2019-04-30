@@ -137,10 +137,10 @@ export default {
           slot: "img",
           hidden: true
         },
-        {
-          key: "agentId",
-          title: "客户ID"
-        },
+        // {
+        //   key: "agentId",
+        //   title: "客户ID"
+        // },
         {
           key: "wxName",
           title: "微信号"
@@ -177,10 +177,7 @@ export default {
           operates: [
             {
               name: "查看",
-              emitKey: "toOrder",
-              escape2: obj => {
-                return obj.wxId == null || obj.wxId == undefined;
-              }
+              emitKey: "toOrder"
             }
           ]
         },
@@ -204,7 +201,7 @@ export default {
               name: "更换微信",
               emitKey: "changeWechat",
               escape: obj => {
-                return obj.wxId == null || obj.wxId == undefined
+                return obj.wxName == null || obj.wxName == undefined
                   ? "添加微信"
                   : "更换微信";
               }
@@ -230,7 +227,6 @@ export default {
     // 初始化数据
     initData(obj) {
       let a = this.$route.query;
-      console.log(this.queryParams);
       if (this.$route.query.wxId) {
         this.queryParams.wxId = this.$route.query.wxId;
       } else {
@@ -250,12 +246,13 @@ export default {
       }
       delete this.queryParams.wxId;
       delete this.$route.query.wxId;
-
-      console.log(this.queryParams, "reseted");
     },
     // 获取顾问列表
     async getAdviserList() {
       let res = await api.getAdviserList();
+      if (res.data == null || res.data.length == 0) {
+        return;
+      }
       res.data.map((item, index) => {
         this.adviserList.push({
           label: item.adviserName,
@@ -271,6 +268,10 @@ export default {
     },
     // 更换顾问
     changeAdviser(row) {
+      if (!this.PermissionAuth("real", "put")) {
+        this.$message.error("该操作没有权限");
+        return;
+      }
       this.title = row.adviserId == null ? "添加顾问" : "更换顾问";
       this.type = "Adviser";
       this.detailsData = row;
@@ -279,13 +280,16 @@ export default {
     },
     // 更换微信
     changeWechat(row) {
+      if (!this.PermissionAuth("real", "put")) {
+        this.$message.error("该操作没有权限");
+        return;
+      }
       this.detailsVisible = true;
-      this.title = row.wxId == null ? "添加微信" : "更换微信";
+      this.title =
+        row.wxName == null || row.wxName == "" ? "添加微信" : "更换微信";
       this.inputInfo = row.wxName;
       this.type = "Wechat";
       this.detailsData = row;
-      console.log(row.wxName);
-      console.log(this.inputInfo);
     },
     //跳转至咨询服务订单页，显示这个人对应的下单数据
     toOrder(row) {
@@ -301,17 +305,7 @@ export default {
       let result = "";
       let _this = this;
       if (this.type == "Wechat") {
-        console.log(this.detailsData.wxName);
-        console.log(_this.inputInfo);
-        console.log(_this.detailsData.wxId);
-
-        // debugger;
         if (_this.detailsData.wxId) {
-          //更换
-          // if (_this.detailsData.wxName == _this.input) {
-          //   alert("未修改");
-          //   return;
-          // }
           result = await api.changeWxName({
             oldWxName: _this.detailsData.wxName,
             newWxName: _this.inputInfo
@@ -324,10 +318,6 @@ export default {
           });
         }
       } else {
-        console.log(this.detailsData.adviserName, 3333);
-
-        console.log(this.adviserList, 222);
-        console.log(this.select, 222);
         let name = "";
         for (const item of this.adviserList) {
           // debugger;
@@ -341,15 +331,14 @@ export default {
           adviserName: name,
           unionId: _this.detailsData.unionId
         };
-        //更换
-        //新增
         if (this.detailsData.adviserId) {
+          //新增
           result = await api.changeAdviser(data);
         } else {
+          //更换
           result = await api.addAdviser(data);
         }
       }
-
       this.$message.success("操作成功");
       this.detailsVisible = false;
       this.initData();

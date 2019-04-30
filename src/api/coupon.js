@@ -30,7 +30,7 @@ export default {
    */
   exportCouponExcel:(data) =>{
       return request({
-        url:'/coupon/record/excel'+formatQueryData(data),
+        url:dev+'/coupon/record/excel'+formatQueryData(data),
         method:'get',
         data
       })

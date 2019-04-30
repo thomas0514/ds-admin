@@ -21,9 +21,10 @@
         </el-form-item>
         <el-form-item v-else-if="item.type === 'select'" :label="item.label" :key="index">
           <el-select
-            :clearable="item.clearable"
+            :clearable="true"
             :filterable="item.filterable"
             v-model="item.value"
+            :collapse-tags="true"
             :placeholder="item.placeholder || ''"
           >
             <el-option
@@ -98,7 +99,7 @@ export default {
       default: () => []
     }
   },
-   components: {
+  components: {
     doubleInput
   },
   data() {

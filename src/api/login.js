@@ -47,3 +47,11 @@ export function changePassword(data) {
     data
   })
 }
+
+//新消息总数
+export function getUserMessageCount(data) {
+  return request({
+    url: dev + '/comm/message/count',
+    method: 'get'
+  })
+}

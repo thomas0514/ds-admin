@@ -133,13 +133,12 @@ export default {
     },
     synchronize(row) {
       let that = this;
-      let status = this.$route.query.bindStatus;
-      let policyIds = this.$route.query.policyId.split(",");
-      let tips = "解绑";
-      if (status == 1) {
-        tips = "绑定";
+      if(!that.PermissionAuth("wxcustomer", "put")){
+        that.$message.error("该操作没有权限");
+        return false;
       }
-      let title = "确定" + tips + "“" + row.customerName + "”的保险订单吗？";
+      let policyIds = that.$route.query.policyId.split(",");
+      let title = "确定绑定" + "“" + row.customerName + "”的保险订单吗？";
       let data = {
         policyIds: policyIds,
         serviceOrderId: row.serviceOrderId
@@ -151,16 +150,12 @@ export default {
           type: "warning"
         })
         .then(() => {
-          if (status == 1) {
             that.orderBind(data);
-          } else {
-            that.orderUnBind(data);
-          }
         })
         .catch(() => {
           that.$message({
             type: "info",
-            message: "已取消" + tips
+            message: "已取消绑定"
           });
         });
     },
@@ -173,15 +168,6 @@ export default {
         this.$message.error(res.msg);
       }
     },
-    async orderUnBind(data) {
-      let res = await api.orderUnBind(data);
-      if (res.status == 1) {
-        this.$message.success(res.msg);
-        this.initData();
-      } else {
-        this.$message.error(res.msg);
-      }
-    }
   }
 };
 </script>

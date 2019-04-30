@@ -226,7 +226,7 @@ export default {
       if (res.status == 1) {
         that.detailsVisible = false;
         that.$message.success("新建成功");
-        this.initData();
+        that.initData();
       } else {
         that.$message.error(res.msg);
       }
@@ -243,6 +243,7 @@ export default {
       if (res.status == 1) {
         that.detailsVisible = false;
         that.$message.success("修改成功");
+        that.initData();
       } else {
         that.$message.error(res.msg);
       }
@@ -262,12 +263,18 @@ export default {
     },
     viewRole(row) {
       let data = { id: row.roleId };
+      this.roleTitle = "角色详情";
       this.iSdisabled = true;
       this.detailsVisible = true;
       this.getRoleOne(data);
       this.getRoleMenu();
     },
     editRole(row) {
+      if(!this.PermissionAuth("role", "put")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
+      this.roleTitle = "修改角色";
       this.roleId = row.roleId;
       let data = { id: row.roleId };
       this.iSdisabled = false;
@@ -276,6 +283,10 @@ export default {
       this.getRoleMenu();
     },
     deleteRole(row) {
+      if(!this.PermissionAuth("role", "delete")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
       let data = {
         id: row.roleId
       };
@@ -292,7 +303,7 @@ export default {
             if (res.status == 1) {
               that.$message({
                 type: "success",
-                message: "删除成功!"
+                message: "删除成功"
               });
             } else {
               that.$message.error(res.msg);
@@ -308,6 +319,10 @@ export default {
     },
     //新增角色
     queryBtn() {
+      if(!this.PermissionAuth("role", "post")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
       this.roleTitle = "新增角色";
       this.roleId = "";
       this.seqList = [];

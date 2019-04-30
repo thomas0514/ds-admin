@@ -46,7 +46,7 @@ export default {
   //查询日历
   getdayslist: (data) => {
     return request({
-      url: dev + '/service/aideselect/days/list',
+      url: dev + '/service/process/days/list',
       method: 'get',
       data
     })
@@ -54,7 +54,7 @@ export default {
   //根据dayId查询当天小助手情况
   getAideworklist: (data) => {
     return request({
-      url: dev + '/service/aideselect/aidework/list?dayId=' + data.dayId,
+      url: dev + '/service/process/aidework/list?dayId=' + data.dayId,
       method: 'get',
       data
     })

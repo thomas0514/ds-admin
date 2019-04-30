@@ -31,13 +31,41 @@ function changeUserMenus(newMenus, menus) {
 function filterUserMenus(routes, menus, roles) {
   for (let i = 0; i < routes.length; i++) {
     for (let j = 0; j < menus.length; j++) {
-      if (routes[i].name == menus[j].name) {
-        if (routes[i].meta && routes[i].meta.roles) {
-          routes[i].meta.roles = roles
+      if (routes[i].name == 'service' && routes[i].meta.title == '咨询服务') {
+        let status = false
+        for (let k = 0; k < menus.length; k++) {
+          if (menus[k].name == 'userPlanDetails' ||
+            menus[k].name == 'demandQuestionnaire' ||
+            menus[k].name == 'insuranceQuestionnaire' ||
+            menus[k].name == 'process' ||
+            menus[k].name == 'processManagement' ||
+            menus[k].name == 'enterCustomer' ||
+            menus[k].name == 'plan' ||
+            menus[k].name == 'insure') {
+            status = true
+            break
+          }
         }
-        if (routes[i].children) {
-          routes[i].children = filterUserMenus(routes[i].children, menus, roles)
+        if (status) {
+          if (routes[i].meta && routes[i].meta.roles) {
+            routes[i].meta.roles = roles
+          }
+          if (routes[i].children) {
+            routes[i].children = filterUserMenus(routes[i].children, menus, roles)
+          }
+        } else {
+          routes[i].hidden = true
         }
+      } else {
+        if (routes[i].name == menus[j].name) {
+          if (routes[i].meta && routes[i].meta.roles) {
+            routes[i].meta.roles = roles
+          }
+          if (routes[i].children) {
+            routes[i].children = filterUserMenus(routes[i].children, menus, roles)
+          }
+        }
+
       }
     }
   }

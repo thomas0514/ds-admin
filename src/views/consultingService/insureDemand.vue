@@ -214,7 +214,8 @@ export default {
       headers: [
         {
           key: "serviceOrderId",
-          title: "订单ID"
+          title: "订单ID",
+          width: "150px"
         },
         {
           key: "wxName",
@@ -254,17 +255,19 @@ export default {
         },
         {
           key: "customerRequirDate",
-          title: "客户最新申请时间"
+          title: "客户最新申请时间",
+          width: "140px"
         },
         {
           key: "demandDate",
-          title: "需求时间"
+          title: "需求时间",
+          width: "140px"
         },
         {
           key: "tbtime",
           title: "投保时间",
+          width: "140px",
           escape: row => {
-            console.log(row);
             return row.insureInfo ? row.insureInfo.insureDate : "";
           }
         },
@@ -373,6 +376,14 @@ export default {
       });
     },
     editClick(row) {
+      if (!this.PermissionAuth("insure", "put")) {
+        this.$message({
+          type: "error",
+          message: "该操作没有权限",
+          center: true
+        });
+        return false;
+      }
       this.serviceOrderId = row.serviceOrderId;
       if (row.insureInfo) {
         this.form = row.insureInfo;

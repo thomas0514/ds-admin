@@ -396,9 +396,25 @@ export default {
         });
       } else if (type == "202") {
         //202 初次设置沟通时间
+        if (!this.PermissionAuth("process", "put")) {
+          this.$message({
+            type: "error",
+            message: "该操作没有权限",
+            center: true
+          });
+          return false;
+        }
         await this.getAppointmentWorkDayInfo();
       } else if (type == "401") {
         //401 修改沟通时间
+        if (!this.PermissionAuth("process", "put")) {
+          this.$message({
+            type: "error",
+            message: "该操作没有权限",
+            center: true
+          });
+          return false;
+        }
         await this.getAppointmentWorkDayInfo();
       } else if (type == "402") {
         //402 方案需求填写
@@ -411,6 +427,14 @@ export default {
         });
       } else if (type == "403") {
         //403 讲解方案时间，专家预约时间
+        if (!this.PermissionAuth("process", "put")) {
+          this.$message({
+            type: "error",
+            message: "该操作没有权限",
+            center: true
+          });
+          return false;
+        }
         await this.getExpertWorkDayInfo();
       } else if (type == "501") {
         //501 创建方案
@@ -430,20 +454,60 @@ export default {
         });
       } else if (type == "503") {
         //503发送方案
+        if (!this.PermissionAuth("process", "put")) {
+          this.$message({
+            type: "error",
+            message: "该操作没有权限",
+            center: true
+          });
+          return false;
+        }
         await this.updateCustomerPlan();
         await this.getAllProcess();
       } else if (type == "504") {
         //504 修改专家预约时间
+        if (!this.PermissionAuth("process", "put")) {
+          this.$message({
+            type: "error",
+            message: "该操作没有权限",
+            center: true
+          });
+          return false;
+        }
         await this.getExpertWorkDayInfo();
       } else if (type == "505") {
         //505 修改方案，调接口
+        if (!this.PermissionAuth("process", "put")) {
+          this.$message({
+            type: "error",
+            message: "该操作没有权限",
+            center: true
+          });
+          return false;
+        }
         this.updatePlanStatus();
       } else if (type == "506") {
         //506 方案满意
+        if (!this.PermissionAuth("process", "put")) {
+          this.$message({
+            type: "error",
+            message: "该操作没有权限",
+            center: true
+          });
+          return false;
+        }
         await this.planSatisfied();
         await this.getAllProcess();
       } else if (type == "702") {
         //701 回访完成
+        if (!this.PermissionAuth("process", "put")) {
+          this.$message({
+            type: "error",
+            message: "该操作没有权限",
+            center: true
+          });
+          return false;
+        }
         this.completeVisit();
         await this.getAllProcess();
       } else if (type == "701") {
@@ -516,6 +580,14 @@ export default {
       this.getProcessTime();
     },
     gotoEnterCustomer() {
+      if (!this.PermissionAuth("process", "put")) {
+        this.$message({
+          type: "error",
+          message: "该操作没有权限",
+          center: true
+        });
+        return false;
+      }
       let query = {
         id: this.serviceOrderId
       };
@@ -542,10 +614,14 @@ export default {
       }
     },
     changeAppointmentTimeTableVisible() {
+      this.workTimeId = "";
+      this.currentDate = "";
+      this.workTime = [];
       this.appointmentTimeTableVisible = !this.appointmentTimeTableVisible;
     },
     async getCustomerWorkDay(item) {
       //预约 选择时间
+      this.workTimeId = "";
       if (item.dayStatus == 4) {
         this.currentDate = item.dayId;
         let obj = {
@@ -630,6 +706,14 @@ export default {
       }
     },
     async saveRecord() {
+      if (!this.PermissionAuth("process", "put")) {
+        this.$message({
+          type: "error",
+          message: "该操作没有权限",
+          center: true
+        });
+        return false;
+      }
       if (this.note == "") {
         this.$message({
           type: "error",
@@ -643,6 +727,7 @@ export default {
         note: this.note
       });
       if (result.status == 1) {
+        this.note = "";
         await this.getAllProcess();
         this.$message({
           type: "success",
@@ -863,6 +948,9 @@ export default {
   .opt {
     text-align: center;
   }
+  .el-dialog__body {
+    padding: 10px;
+  }
   .date {
     border: 1px #dcdfe6 solid;
     width: 300px;
@@ -870,7 +958,8 @@ export default {
     border-right: none;
     border-bottom: none;
     margin: 0 auto;
-    overflow: hidden;
+    max-height: 201px;
+    overflow: auto;
     span {
       float: left;
       height: 40px;
@@ -910,6 +999,9 @@ export default {
     }
     .disabled {
       color: #ccc;
+      background-image: url("../../assets/images/res_full.png");
+      background-repeat: no-repeat;
+      background-position: top right;
     }
   }
   .opt {

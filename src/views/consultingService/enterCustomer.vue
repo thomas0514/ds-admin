@@ -1353,8 +1353,10 @@ export default {
     },
     hideDialogTable() {
       this.dialogTableVisible = false;
-      this.currentAide = "";
-      this.currentAideName = "";
+      if (this.pageStatus != "edit") {
+        this.currentAide = "";
+        this.currentAideName = "";
+      }
       this.currentDate = "";
     },
     gotoPage() {
@@ -1396,11 +1398,13 @@ export default {
     submit() {
       this.dialogTableVisible = false;
       this.form.needDateDayId = this.currentDate;
-      this.form.aideId = this.currentAide;
-      this.form.aideName = this.currentAideName;
-      this.currentAide = "";
+      if (this.pageStatus != "edit") {
+        this.form.aideId = this.currentAide;
+        this.form.aideName = this.currentAideName;
+        this.currentAideName = "";
+        this.currentAide = "";
+      }
       this.currentDate = "";
-      this.currentAideName = "";
     },
     async createCustomer() {
       //创建数据
@@ -1428,8 +1432,7 @@ export default {
         if (
           obj.customerName &&
           (obj.avatarType == "" ||
-            obj.gender == null ||
-            obj.gender == "" ||
+            ((obj.gender == null || obj.gender == "") && obj.gender != 0) ||
             ((obj.age == null || obj.age == "") && obj.age != 0))
         ) {
           this.$message({
@@ -1602,6 +1605,7 @@ export default {
       padding: 10px 15px;
       margin-left: 30px;
       color: #999;
+      cursor: pointer;
     }
     .mr30 {
       margin-right: 30px;
@@ -1620,6 +1624,9 @@ export default {
       margin-right: 50px;
     }
   }
+  .el-dialog__body {
+    padding: 10px;
+  }
   .date {
     border: 1px #dcdfe6 solid;
     width: 300px;
@@ -1627,7 +1634,8 @@ export default {
     border-right: none;
     border-bottom: none;
     margin: 0 auto;
-    overflow: hidden;
+    overflow: auto;
+    max-height: 201px;
     span {
       float: left;
       height: 40px;
@@ -1637,6 +1645,7 @@ export default {
       box-sizing: border-box;
       border-right: 1px #dcdfe6 solid;
       border-bottom: 1px #dcdfe6 solid;
+      cursor: pointer;
     }
     .disabled {
       color: #ccc;

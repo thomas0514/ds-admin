@@ -136,5 +136,28 @@ export default {
       url: dev + '/customer/real/excel' + formatQueryData(data),
       method: 'get'
     })
+  },
+  // 潜在用户上传错误导出数据
+  exportExceltempUser: (data) => {
+    return request({
+      url: dev + '/customer/temp/getFailDataExcel' + formatQueryData(data),
+      method: 'get'
+    })
+  },
+  //近期消息列表
+  getUserMessage: (data) => {
+    return request({
+      url: dev + '/comm/message/list',
+      method: 'get'
+    })
+  },
+  //修改消息状态
+  changeUserMessageStatus: (data) => {
+    return request({
+      url: dev + '/comm/message/see',
+      method: 'put',
+      data
+    })
   }
+
 }

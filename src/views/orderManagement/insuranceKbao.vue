@@ -176,12 +176,12 @@ export default {
             return obj.orderStatus == 1
               ? "已提交"
               : obj.orderStatus == 2
-                ? "已核保"
-                : obj.orderStatus == 3
-                  ? "已收费"
-                  : obj.orderStatus == 4
-                    ? "已承保"
-                    : "其他";
+              ? "已核保"
+              : obj.orderStatus == 3
+              ? "已收费"
+              : obj.orderStatus == 4
+              ? "已承保"
+              : "其他";
           }
         },
         {
@@ -260,6 +260,9 @@ export default {
     async getAgentList() {
       let tempArr = [];
       let res = await api.getAgentList();
+      if (res.data == null || res.data.length == 0) {
+        return;
+      }
       res.data.map((item, index) => {
         tempArr.push({
           label: item.agentName,
@@ -271,6 +274,9 @@ export default {
     async getAdviserList() {
       let tempArr = [];
       let res = await api.getAdviserList();
+      if (res.data == null || res.data.length == 0) {
+        return;
+      }
       res.data.map((item, index) => {
         tempArr.push({
           label: item.adviserName,
@@ -282,6 +288,9 @@ export default {
     async getExpertList() {
       let tempArr = [];
       let res = await api.getExpertList();
+      if (res.data == null || res.data.length == 0) {
+        return;
+      }
       res.data.map((item, index) => {
         tempArr.push({
           label: item.expertName,
@@ -293,6 +302,9 @@ export default {
     async getAideList() {
       let tempArr = [];
       let res = await api.getAideList();
+      if (res.data == null || res.data.length == 0) {
+        return;
+      }
       res.data.map((item, index) => {
         tempArr.push({
           label: item.aideName,

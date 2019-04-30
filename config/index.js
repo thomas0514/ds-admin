@@ -11,8 +11,8 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/dev': {
-        target: 'http://10.78.10.100:8910', //设置你调用的接口域名和端口号
-        //target: 'http://10.176.16.30:8910', //设置你调用的接口域名和端口号 
+        //target: 'http://10.78.10.100:8900/admin', //设置你调用的接口域名和端口号
+        target: 'http://10.176.16.30:8910', //设置你调用的接口域名和端口号 
         //target: 'http://10.78.10.67:8910', //w王志彪
         changeOrigin: true, //跨域
         pathRewrite: {

@@ -6,6 +6,10 @@
       class="hamburger-container"
     />
     <breadcrumb/>
+    <div @click="gotoMessage" class="message-icon">
+      <el-badge class="mark" :max="10" v-if="msgNum>0" :value="msgNum" />
+      <svg-icon icon-class="message"/>
+    </div>
     <el-dropdown class="avatar-container" trigger="click">
       <div class="avatar-wrapper">
         <img :src="avatar?avatar:'/static/avatar.png'" width="40" class="user-avatar" height="40" alt>
@@ -25,6 +29,7 @@
 </template>
 
 <script>
+import api from "@/api/index";
 import { mapGetters } from "vuex";
 import Breadcrumb from "@/components/Breadcrumb";
 import Hamburger from "@/components/Hamburger";
@@ -35,7 +40,10 @@ export default {
     Hamburger
   },
   computed: {
-    ...mapGetters(["sidebar", "userInfo", "avatar", "name"])
+    ...mapGetters(["sidebar", "userInfo", "avatar", "name","msgNum"])
+  },
+  created() {
+    this.initData();
   },
   methods: {
     toggleSideBar() {
@@ -45,6 +53,19 @@ export default {
       this.$store.dispatch("LogOut").then(() => {
         location.reload(); // 为了重新实例化vue-router对象 避免bug
       });
+    },
+    gotoMessage(){
+      this.$router.push({
+        path: "/message/list"
+      });
+    },
+    async initData(){
+      let $this = this;
+      this.$store.dispatch("ReadMsg");
+      setInterval(function(){
+        $this.$store.dispatch("ReadMsg");
+      },100000)
+       
     }
   }
 };
@@ -66,6 +87,21 @@ export default {
     right: 90px;
     top: 16px;
     color: red;
+  }
+  .message-icon{
+    position: absolute;
+    top:0px;
+    right: 140px;
+    width: 30px;
+    height: 30px;
+    font-size: 25px;
+    color: #303133;
+    cursor: pointer;
+    .el-badge{
+      position: absolute;
+      top:-10px;
+      right:-5px;
+    }
   }
   .avatar-container {
     height: 50px;

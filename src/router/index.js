@@ -60,6 +60,23 @@ export const constantRouterMap = [
       }
     }]
   },
+  {
+    path: '/message',
+    component: Layout,
+    redirect: '/message/list',
+    name: 'message',
+    hidden: true,
+    children: [{
+      path: 'list',
+      name: 'list',
+      component: () => import('@/views/message'),
+      hidden: true,
+      meta: {
+        title: '消息中心',
+        roles: []
+      }
+    }]
+  }
 ]
 
 export const asyncRouterMap = [

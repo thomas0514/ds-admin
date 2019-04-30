@@ -3,11 +3,11 @@
  */
 let devService = "";
 if (process.env.NODE_ENV == "development") {
-  devService = `/dev`;
+  devService = "/dev";
 } else if (process.env.NODE_ENV == "test") {
-  devService = `/dev`;
-} else {
-  devService = `/dev`;
+  devService = `https://dsadmin-api-sta.fancetech.com/admin`;
+} else if (process.env.NODE_ENV == "uat") {
+  devService = `https://dsadmin-api-uat.fancetech.com/admin`;
 }
 
 export {

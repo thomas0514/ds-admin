@@ -20,7 +20,7 @@
         <el-table
           v-loading="loading"
           :data="list"
-          border=""
+          border
           size="small"
           :header-row-style="{'font-size':'14px'}"
           @selection-change="handleSelectionChange"
@@ -90,6 +90,30 @@
                   :src="scope.row[column.key]?scope.row[column.key]:'/static/avatar.png'"
                   style="width:50px;height:50px;border-radius:50%"
                 >
+                <!--img2为渠道页面专用-->
+                <el-popover
+                  trigger="hover"
+                  placement="right"
+                  v-if="column.slot=='img2' && !column.extra"
+                >
+                  <img
+                    :src="scope.row[column.key]?scope.row[column.key]:'/static/noimg.png'"
+                    style="width:200px;height:200px;"
+                  >
+                  <p style="text-align:center">{{scope.row.channelName}}</p>
+                  <div>
+                     <el-button size="small" @click="handleClickBtn('copyChannelUrl', scope.row)" type="primary">复制链接</el-button>
+                     <el-button size="small" style="margin-left:20px" @click="handleClickBtn('loadewm', scope.row)"  type="primary">下载二维码</el-button>
+                  </div>
+                  <div slot="reference" class="name-wrapper">
+                    <img
+                      v-if="column.slot=='img2'"
+                      :src="scope.row[column.key]?scope.row[column.key]:'/static/noimg.png'"
+                      style="width:50px;height:50px;"
+                    >
+                    <!-- img+鼠标滑动展示大图  end -->
+                  </div>
+                </el-popover>
                 <!-- img+鼠标滑动展示大图  图片地址及大图中的内容都是固定的 后期需要再优化 -->
                 <el-popover trigger="hover" placement="right" v-if="column.extra">
                   <div style="display:flex; justify-content: space-between;">
@@ -244,6 +268,11 @@ export default {
     handleClick(action, data) {
       // emit事件
       this.$emit(`${action.emitKey}`, data);
+    },
+    // 处理点击事件
+    handleClickBtn(action, data) {
+      // emit事件
+      this.$emit(`${action}`, data);
     },
     // 选中变化
     handleSelectionChange(val) {

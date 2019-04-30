@@ -222,6 +222,10 @@ export default {
     },
     agreeRefund(row) {
       let that = this;
+      if(!that.PermissionAuth("refund", "put")){
+        that.$message.error("该操作没有权限");
+        return false;
+      }
       that.refund.denialReason = "";
       that.refund.refundId = row.refundId;
       that.refund.refundStatus = 3;
@@ -243,11 +247,19 @@ export default {
         });
     },
     isRefuse(row) {
+      if(!this.PermissionAuth("refund", "put")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
       this.isReason = true;
       this.refund.refundId = row.refundId;
       this.refund.refundStatus = 8;
     },
     refuseRefund() {
+      if(this.refund.denialReason==""||this.refund.denialReason==null||this.refund.denialReason==undefined){
+        this.$message.error("退款原因不能为空");
+        return false;
+      }
       this.isReason = false;
       this.postRefund();
     }

@@ -53,7 +53,12 @@
           </el-upload>
         </el-form-item>
         <el-form-item label="关联组织" :label-width="formLabelWidth">
-          <el-select v-model="detailsData.orgId" :disabled="iSdisabled" placeholder="请选择">
+          <el-select 
+            v-model="detailsData.orgId" 
+            :disabled="iSdisabled" 
+            placeholder="请选择" 
+            @change="orgStatus"
+            clearable >
             <el-option
               v-for="item in orgList"
               :key="item.orgId"
@@ -63,7 +68,11 @@
           </el-select>
         </el-form-item>
         <el-form-item label="成员类型" :label-width="formLabelWidth">
-          <el-select v-model="detailsData.orgType" :disabled="iSdisabled" placeholder="请选择">
+          <el-select 
+            v-model="detailsData.orgType" 
+            :disabled="iSdisabled" 
+            placeholder="请选择"
+            clearable >
             <el-option
               v-for="item in memberList"
               :key="item.orgType"
@@ -72,8 +81,12 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="成员等级" :label-width="formLabelWidth">
-          <el-select v-model="detailsData.level" :disabled="iSdisabled" placeholder="请选择">
+        <el-form-item label="成员等级" :label-width="formLabelWidth" v-if="detailsData.roleId=='role10513'">
+          <el-select 
+            v-model="detailsData.level" 
+            :disabled="iSdisabled" 
+            placeholder="请选择"
+            clearable >
             <el-option
               v-for="item in levelList"
               :key="item.level"
@@ -82,8 +95,12 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="荣联Id" :label-width="formLabelWidth">
-          <el-select v-model="detailsData.rlId" :disabled="iSdisabled" placeholder="请选择">
+        <el-form-item label="荣联Id" :label-width="formLabelWidth" v-if="detailsData.roleId =='role10513'|| detailsData.roleIdian =='role79958'">
+          <el-select 
+            v-model="detailsData.rlId" 
+            :disabled="iSdisabled" 
+            placeholder="请选择"
+            clearable >
             <el-option
               v-for="item in ronglianList"
               :key="item.rlId"
@@ -213,7 +230,9 @@ export default {
         }
       ],
       detailsOptions: [],
-      detailsData: {},
+      detailsData: {
+        roleId:"role10513"
+      },
       detailsVisible: false,
       userTitle: "新增用户",
       userId: "",
@@ -227,7 +246,7 @@ export default {
           orgType: 0
         },
         {
-          orgName: "管理员",
+          orgName: "主管",
           orgType: 1
         }
       ],
@@ -246,8 +265,8 @@ export default {
         }
       ],
       imgUrl: `${devService}/system/user/upload/img`,
-      ronglianList:[],
-      uploadHeaders: { authorization: getToken() }
+      ronglianList: [],
+      uploadHeaders: { authorization: getToken() },
     };
   },
   created() {
@@ -271,7 +290,7 @@ export default {
     handleBeforeUpload(file) {
       const isLt40k = file.size / 1024 < 10000;
       if (!isLt40k) {
-        this.$message.error("上传缩略图大小不能超过 40kB!");
+        this.$message.error("上传缩略图大小不能超过 40kB");
       }
       const isSize = new Promise(function(resolve, reject) {
         let width = 10000;
@@ -288,7 +307,7 @@ export default {
           return file;
         },
         () => {
-          this.$message.error("上传的缩略图必须是等于或小于230*160!");
+          this.$message.error("上传的缩略图必须是等于或小于230*160");
           return Promise.reject();
         }
       );
@@ -318,11 +337,12 @@ export default {
         this.$message.error(res.msg);
       }
     },
-    //获取组织信息
+    //获取用户信息
     async getUserOne(data) {
       let res = await api.getUserOne(data);
       if (res.status == 1) {
         this.detailsData = res.data;
+        this.detailsData.rlId = this.detailsData.rlUserName; 
         this.fileList = [];
         this.fileList.push({ url: res.data.headUrl });
       } else {
@@ -346,7 +366,7 @@ export default {
       if (res.status == 1) {
         that.detailsVisible = false;
         that.$message.success("新建成功");
-        this.initData();
+        that.initData();
       } else {
         that.$message.error(res.msg);
       }
@@ -382,6 +402,10 @@ export default {
       this.getUserOne(data);
     },
     editUser(row) {
+      if(!this.PermissionAuth("user", "put")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
       this.userId = row.userId;
       let data = { id: row.userId };
       this.userTitle = "修改用户";
@@ -390,6 +414,10 @@ export default {
       this.getUserOne(data);
     },
     deleteUser(row) {
+      if(!this.PermissionAuth("user", "delete")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
       let data = {
         id: row.userId
       };
@@ -406,7 +434,7 @@ export default {
             if (res.status == 1) {
               that.$message({
                 type: "success",
-                message: "删除成功!"
+                message: "删除成功"
               });
             } else {
               that.$message.error(res.msg);
@@ -421,11 +449,15 @@ export default {
         });
     },
     ableUser(row) {
-      let title = "此操作将永久禁用该组织, 是否继续?",
+      if(!this.PermissionAuth("user", "put")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
+      let title = "此操作将禁用该用户, 是否继续?",
         type = 1,
         msg = "禁用";
       if (row.isLock == 1) {
-        title = "此操作将永久启用该组织, 是否继续?";
+        title = "此操作将启用该用户, 是否继续?";
         type = 0;
         msg = "启用";
       }
@@ -446,7 +478,7 @@ export default {
             if (res.status == 1) {
               that.$message({
                 type: "success",
-                message: msg + "成功!"
+                message: msg + "成功"
               });
             } else {
               that.$message.error(res.msg);
@@ -456,17 +488,21 @@ export default {
         .catch(() => {
           that.$message({
             type: "info",
-            message: "已取消删除"
+            message: "已取消"+msg
           });
         });
     },
     setUser(row) {
+      if(!this.PermissionAuth("user", "put")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
       let that = this;
       let data = {
         id: row.userId
       };
       that
-        .$confirm('您的密码将重置为"admin"', "提示", {
+        .$confirm('密码重置后，新密码会以短信方式发送到该用户手机上。', "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
@@ -477,7 +513,7 @@ export default {
             if (res.status == 1) {
               that.$message({
                 type: "success",
-                message: "重置成功!"
+                message: "重置成功"
               });
             } else {
               that.$message.error(res.msg);
@@ -491,10 +527,16 @@ export default {
           });
         });
     },
-    //新增组织
+    //新增用户
     queryBtn() {
-      this.userTitle = "新增组织";
+      if(!this.PermissionAuth("user", "post")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
+      this.userTitle = "新增用户";
+      this.fileList = [];
       this.detailsData = {};
+      this.detailsData.roleId = "role10513";
       this.userId = "";
       this.iSdisabled = false;
       this.detailsVisible = true;
@@ -508,11 +550,21 @@ export default {
         that.$message.error(res.msg);
       }
     },
+    orgStatus(){
+        for(let i in this.orgList){
+          if(this.detailsData.orgId == this.orgList[i].orgId){
+            this.detailsData.roleId = this.orgList[i].roleId;
+          }
+        }
+    }
   }
 };
 </script>
 
 <style lang="less">
 .registered-users-page {
+}
+.el-message-box{
+  width:430px;
 }
 </style>

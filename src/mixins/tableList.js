@@ -113,8 +113,9 @@ let listMixins = {
         return;
       }
 
-      let params = Object.assign(this.tableParam, this.queryParams || {})
-      let res = await api[apiName](params);
+      let tmp = {};
+      tmp = Object.assign(tmp, this.tableParam, this.queryParams || {});
+      let res = await api[apiName](tmp);
       if (res.status == 1) {
         window.location.href = res.data.strData;
       } else {

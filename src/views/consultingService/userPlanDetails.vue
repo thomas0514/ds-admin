@@ -273,15 +273,7 @@ export default {
         },
         {
           value: 101,
-          label: "少儿重疾"
-        },
-        {
-          value: 102,
-          label: "成人重疾"
-        },
-        {
-          value: 103,
-          label: "中端医疗险"
+          label: "重疾险"
         },
         {
           value: 201,
@@ -289,7 +281,7 @@ export default {
         },
         {
           value: 301,
-          label: "定期寿"
+          label: "人寿险"
         },
         {
           value: 401,

@@ -43,7 +43,7 @@ export default {
     return {
       toolButtons: [
         {
-          name: "同步",
+          name: "绑定",
           operation: "selectAll",
           icon: "el-icon-rank"
         }
@@ -126,9 +126,10 @@ export default {
       headers: [
         {
           key: "",
-          title: "全选",
+          title: "",
           type: "selection"
         },
+
         {
           key: "orderId",
           title: "订单编号"
@@ -179,7 +180,7 @@ export default {
           title: "被保人身份证号"
         },
         {
-          key: "staPremium",
+          key: "recPremium",
           title: "保费"
         },
         {
@@ -224,15 +225,22 @@ export default {
       }
     },
     bind(row) {
+      if(!this.PermissionAuth("bind", "put")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
       this.$router.push({
         path: "/orderManagement/wxcustomer",
         query: {
           policyId: row.policyId,
-          bindStatus: 1
         }
       });
     },
     selectAll() {
+      if(!this.PermissionAuth("bind", "put")){
+        this.$message.error("该操作没有权限");
+        return false;
+      }
       let policyId = this.policyIds.join(",");
       if (policyId == "" || policyId == null) {
         this.$message.error("您还未选择需要绑定的保单");
@@ -242,7 +250,6 @@ export default {
         path: "/orderManagement/wxcustomer",
         query: {
           policyId: policyId,
-          bindStatus: 1
         }
       });
     },
@@ -277,5 +284,10 @@ export default {
 
 <style lang="less">
 .registered-users-page {
+}
+.el-table__header-wrapper .el-checkbox__inner{
+  width:0px;
+  height:0px;
+  border:none;
 }
 </style>

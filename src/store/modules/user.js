@@ -2,7 +2,8 @@ import {
     login,
     logout,
     getInfo,
-    getUserRoleMenu
+    getUserRoleMenu,
+    getUserMessageCount
 } from '@/api/login'
 import {
     getToken,
@@ -21,7 +22,8 @@ const user = {
         name: '',
         avatar: '',
         userInfo: getUserInfo(),
-        menus: []
+        menus: [],
+        msgNum: 0,
     },
 
     mutations: {
@@ -35,6 +37,9 @@ const user = {
         },
         SET_MENUS: (state, menus) => {
             state.menus = menus
+        },
+        SET_MSGNUM: (state, num) => {
+            state.msgNum = num
         }
     },
 
@@ -119,6 +124,14 @@ const user = {
                 removeToken()
                 resolve()
             })
+        },
+        //消息
+        ReadMsg({ commit }) {
+            getUserMessageCount().then(function (res) {
+                if (res.data) {
+                    commit('SET_MSGNUM', res.data.num)
+                }
+            })
         }
     }
 }
@@ -131,7 +144,7 @@ function filterUserMenus(menus) {
             title: menus[i].title,
             name: menus[i].name
         }
-        if (menus[i].roleMenuList.length > 0) {
+        if (menus[i].name != 'channel' && menus[i].roleMenuList.length > 0) {
             let roles = []
             for (let j = 0; j < menus[i].roleMenuList.length; j++) {
                 let roleObj = {
@@ -203,6 +216,19 @@ function filterUserMenus(menus) {
                 roles.push(roleObj)
             }
             obj.children = roles
+        } else {
+            if (menus[i].roleMenuList.length > 0) {
+                let roleObj = {
+                    title: menus[i].title,
+                    name: menus[i].name
+                }
+                let auth = []
+                for (let j = 0; j < menus[i].roleMenuList.length; j++) {
+                    auth.push(menus[i].roleMenuList[j].name)
+                }
+                roleObj.auth = auth
+                obj.children = [roleObj]
+            }
         }
         newMenus.push(obj)
     }
